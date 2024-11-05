@@ -19,10 +19,15 @@ import {
 import { Button } from "./ui/Button";
 import axios from "axios";
 import "easymde/dist/easymde.min.css";
+import { Ticket } from "@prisma/client";
+
+interface Props {
+  ticket?: Ticket;
+}
 
 type TicketFormData = z.infer<typeof ticketSchema>;
 
-const TicketForm = () => {
+const TicketForm = ({ ticket }: Props) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
@@ -35,7 +40,11 @@ const TicketForm = () => {
     try {
       setIsSubmitting(true);
       setError("");
-      await axios.post("/api/tickets", values);
+      if (ticket) {
+        await axios.patch(`/api/tickets/${ticket.id}`, values);
+      } else {
+        await axios.post("/api/tickets", values);
+      }
 
       setIsSubmitting(false);
       router.push("/tickets");
@@ -56,11 +65,16 @@ const TicketForm = () => {
           <FormField
             control={form.control}
             name="title"
+            defaultValue={ticket?.title}
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Ticket Title</FormLabel>
                 <FormControl>
-                  <Input placeholder="Ticket Title..." {...field} />
+                  <Input
+                    placeholder="Ticket Title..."
+                    {...field}
+                    // defaultValue={ticket?.title}
+                  />
                 </FormControl>
               </FormItem>
             )}
@@ -68,14 +82,20 @@ const TicketForm = () => {
           <Controller
             control={form.control}
             name="description"
+            defaultValue={ticket?.description}
             render={({ field }) => (
-              <SimpleMDE placeholder="Description..." {...field} />
+              <SimpleMDE
+                placeholder="Description..."
+                {...field}
+                defaultValue={ticket?.description}
+              />
             )}
           />
           <div className="flex w-full space-x-4">
             <FormField
               control={form.control}
               name="status"
+              defaultValue={ticket?.status}
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Status</FormLabel>
@@ -85,7 +105,10 @@ const TicketForm = () => {
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Status..." />
+                        <SelectValue
+                          placeholder="Status..."
+                          defaultValue={ticket?.status}
+                        />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -100,6 +123,7 @@ const TicketForm = () => {
             <FormField
               control={form.control}
               name="priority"
+              defaultValue={ticket?.priority}
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Priority</FormLabel>
@@ -109,7 +133,10 @@ const TicketForm = () => {
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Priority..." />
+                        <SelectValue
+                          placeholder="Priority..."
+                          defaultValue={ticket?.priority}
+                        />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -123,7 +150,7 @@ const TicketForm = () => {
             />
           </div>
           <Button type="submit" disabled={isSubmitting}>
-            Submit
+            {ticket ? "Update Ticket" : "Create Ticket"}
           </Button>
         </form>
       </Form>
