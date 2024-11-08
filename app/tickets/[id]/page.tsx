@@ -7,15 +7,17 @@ interface Props {
 }
 
 const ViewTicket = async ({ params }: Props) => {
-  const { id } = params;
+  const { id } = await params;
   const ticket = await prisma.ticket.findUnique({
     where: { id: parseInt(id) },
   });
 
+  const users = await prisma.user.findMany();
+
   if (!ticket) {
     return <p className="text-destructive">Ticket Not Found</p>;
   }
-  return <TicketDetails ticket={ticket} />;
+  return <TicketDetails ticket={ticket} users={users}/>;
 };
 
 export default ViewTicket;
